@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>还能做什么</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #fdf6ec;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    color: #3a2a1a;
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+    color: #c0392b;
+    letter-spacing: 2px;
+  }
+
+  header p {
+    margin-top: 8px;
+    color: #888;
+    font-size: 0.95rem;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* API Key */
+  .api-section {
+    background: #fff8f0;
+    border: 1px solid #f0d9c0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .api-section.hidden {
+    display: none;
+  }
+
+  .api-section label {
+    font-size: 0.85rem;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  .api-section input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: #555;
+    outline: none;
+    font-family: monospace;
+  }
+
+  /* 食材输入区 */
+  .ingredients-box {
+    background: #fff;
+    border: 2px solid #f0d9c0;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(192,57,43,0.06);
+  }
+
+  .ingredients-box h2 {
+    font-size: 1rem;
+    color: #c0392b;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tags-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    background: #fdebd0;
+    color: #c0392b;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: popIn 0.15s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .tag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #e67e22;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .input-row input {
+    flex: 1;
+    border: 1.5px solid #f0d9c0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fdf6ec;
+  }
+
+  .input-row input:focus {
+    border-color: #e67e22;
+  }
+
+  .btn-add {
+    background: #e67e22;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover { background: #d35400; }
+
+  /* 快速预设 */
+  .presets {
+    margin-bottom: 20px;
+  }
+
+  .presets p {
+    font-size: 0.82rem;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+
+  .preset-group {
+    margin-bottom: 14px;
+  }
+
+  .preset-group-title {
+    font-size: 0.78rem;
+    color: #999;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .preset-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .preset-tag {
+    background: #fff;
+    border: 1px solid #f0d9c0;
+    color: #c0392b;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .preset-tag:hover {
+    background: #fdebd0;
+    border-color: #e67e22;
+  }
+
+  /* 菜品数设置 */
+  .dish-count-section {
+    background: #fff;
+    border: 1px solid #f0d9c0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dish-count-section label {
+    font-size: 0.88rem;
+    color: #888;
+  }
+
+  .count-options {
+    display: flex;
+    gap: 6px;
+  }
+
+  .count-option {
+    background: #fdebd0;
+    border: 2px solid transparent;
+    color: #c0392b;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .count-option:hover {
+    background: #f5cba7;
+  }
+
+  .count-option.active {
+    background: #c0392b;
+    color: #fff;
+    border-color: #e67e22;
+  }
+
+  /* 输入界面 */
+  .input-view {
+    transition: opacity 0.3s ease;
+  }
+
+  .input-view.hidden {
+    display: none;
+  }
+
+  /* 结果界面 */
+  .result-view {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .result-view.visible {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 返回按钮 */
+  .btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    background: #f0d9c0;
+    color: #c0392b;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .btn-back:hover {
+    background: #e67e22;
+    color: #fff;
+  }
+
+  .btn-back:active {
+    transform: scale(0.98);
+  }
+  .btn-generate {
+    width: 100%;
+    background: linear-gradient(135deg, #c0392b, #e67e22);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 16px rgba(192,57,43,0.25);
+    margin-bottom: 28px;
+  }
+
+  .btn-generate:hover { opacity: 0.9; }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* 结果区 */
+  .result-area {
+    display: none;
+  }
+
+  .result-area.visible { display: block; }
+
+  .result-area h2 {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .dish-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    border-left: 4px solid #e67e22;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .dish-card h3 {
+    font-size: 1.1rem;
+    color: #c0392b;
+    margin-bottom: 6px;
+  }
+
+  .dish-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: #fdebd0;
+    color: #e67e22;
+  }
+
+  .dish-card p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .dish-details {
+    background: #faf9f7;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+  }
+
+  .dish-details h4 {
+    color: #c0392b;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
+  .dish-details ul,
+  .dish-details ol {
+    padding-left: 18px;
+    color: #555;
+    line-height: 1.7;
+  }
+
+  .dish-details li {
+    margin-bottom: 4px;
+  }
+
+  .calories {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f5e9;
+    color: #27ae60;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .difficulty-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .difficulty-stars {
+    color: #f39c12;
+    letter-spacing: 1px;
+  }
+
+  .missing {
+    font-size: 0.82rem;
+    color: #aaa;
+    margin-top: 6px;
+  }
+
+  .missing span {
+    color: #e67e22;
+  }
+
+  /* 加载 */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #ccc;
+    display: none;
+  }
+
+  .loading.visible { display: block; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #f0d9c0;
+    border-top-color: #e67e22;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: #fff0f0;
+    border: 1px solid #fcc;
+    color: #c0392b;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    display: none;
+    margin-bottom: 16px;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* 响应式布局 */
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.8rem; }
+    header { padding: 30px 16px 16px; }
+    .container { padding: 0 16px 40px; }
+    .ingredients-box { padding: 16px; }
+    .tags-area { gap: 6px; }
+    .tag { font-size: 0.8rem; padding: 4px 10px; }
+    .tag button { font-size: 0.9rem; }
+    .btn-add { padding: 10px 14px; font-size: 0.9rem; }
+    .input-row input { font-size: 0.9rem; padding: 9px 12px; }
+    .btn-generate { padding: 14px; font-size: 1rem; }
+    .dish-card { padding: 14px 16px; }
+    .dish-card h3 { font-size: 1rem; }
+    .badge { font-size: 0.7rem; padding: 2px 8px; }
+    .dish-details { padding: 10px 12px; font-size: 0.82rem; }
+    .presets { gap: 5px; }
+    .preset-tag { font-size: 0.78rem; padding: 3px 10px; }
+  }
+
+  @media (max-width: 400px) {
+    header h1 { font-size: 1.5rem; }
+    .btn-add { padding: 9px 12px; font-size: 0.85rem; }
+    .dish-card { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍳 还能做什么</h1>
+  <p>告诉我冰箱里有啥，我来告诉你能做什么好吃的</p>
+</header>
+
+<div class="container">
+
+  <!-- 输入界面 -->
+  <div class="input-view" id="inputView">
+    <!-- API Key -->
+    <div class="api-section hidden" id="apiSection">
+      <label>🔑 DeepSeek Key</label>
+      <input type="password" id="apiKey" placeholder="sk-xxxxxxxxxxxxxxxx" />
+    </div>
+
+    <!-- 菜品数设置 -->
+    <div class="dish-count-section">
+      <label>🍽️ 想要几道菜？</label>
+      <div class="count-options" id="countOptions">
+        <span class="count-option" data-count="3">3道</span>
+        <span class="count-option active" data-count="5">5道</span>
+        <span class="count-option" data-count="8">8道</span>
+      </div>
+    </div>
+
+    <!-- 食材输入 -->
+    <div class="ingredients-box">
+      <h2>🥬 我有这些食材</h2>
+      <div class="tags-area" id="tagsArea"></div>
+      <div class="input-row">
+        <input type="text" id="ingredientInput" placeholder="输入食材，回车或点击添加…" />
+        <button class="btn-add" onclick="addIngredient()">+ 添加</button>
+      </div>
+    </div>
+
+    <!-- 快速预设 -->
+    <div class="presets">
+      <p>🔥 快速选择常见食材</p>
+      <div class="preset-tags" id="presetTags"></div>
+    </div>
+
+    <button class="btn-generate" id="genBtn" onclick="generate()">✨ 还能做什么？</button>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>AI 正在想菜谱…</p>
+    </div>
+  </div>
+
+  <!-- 结果界面 -->
+  <div class="result-view" id="resultView">
+    <h2>👨‍🍳 为你推荐的菜肴</h2>
+    <div id="dishList"></div>
+    <button class="btn-back" onclick="goBack()">✕ 返回</button>
+  </div>
+
+</div>
+
+<script>
+const PRESET_CATEGORIES = {
+  '🥬 蔬菜': ['番茄','土豆','白菜','黄瓜','洋葱','胡萝卜','蘑菇','生菜','豆芽','青菜','菠菜','西兰花','芹菜','茄子','青椒','豆腐'],
+  '🥩 肉类': ['猪肉','牛肉','鸡肉','羊肉','鱼肉','虾','腊肉','火腿'],
+  '🧄 调料': ['大蒜','葱','姜','香菜','小米辣','豆瓣酱','酱油','醋','料酒'],
+  '🥚 蛋类': ['鸡蛋','鸭蛋','鹌鹑蛋'],
+  '🍚 主食': ['米饭','面条','馒头','饺子','包子','馄饨','剩饭','剩菜']
+};
+let ingredients = [];
+let dishCount = 5;
+
+// 菜品数选择
+const countOptions = document.querySelectorAll('.count-option');
+countOptions.forEach(opt => {
+  opt.addEventListener('click', () => {
+    countOptions.forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    dishCount = parseInt(opt.dataset.count);
+  });
+});
+
+// API Key 本地存储
+const apiKeyInput = document.getElementById('apiKey');
+const apiSection = document.getElementById('apiSection');
+const savedKey = localStorage.getItem('what-can-i-cook-api');
+
+function checkApiKey() {
+  const key = apiKeyInput.value.trim() || savedKey;
+  if (!key) {
+    apiSection.classList.remove('hidden');
+    return null;
+  }
+  return key;
+}
+
+if (savedKey) {
+  apiKeyInput.value = savedKey;
+} else {
+  // 首次访问没有 Key，不显示输入框
+}
+
+apiSection.classList.add('hidden');
+
+apiKeyInput.addEventListener('input', () => {
+  const val = apiKeyInput.value.trim();
+  if (val) {
+    localStorage.setItem('what-can-i-cook-api', val);
+  }
+});
+
+// 监听 API Key 输入框的回车，按下回车后隐藏并尝试生成
+apiKeyInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && apiKeyInput.value.trim()) {
+    apiSection.classList.add('hidden');
+    generate();
+  }
+});
+
+// 渲染预设
+const pt = document.getElementById('presetTags');
+Object.entries(PRESET_CATEGORIES).forEach(([category, items]) => {
+  const group = document.createElement('div');
+  group.className = 'preset-group';
+
+  const title = document.createElement('div');
+  title.className = 'preset-group-title';
+  title.textContent = category;
+  group.appendChild(title);
+
+  const tagsContainer = document.createElement('div');
+  tagsContainer.className = 'preset-tags';
+
+  items.forEach(item => {
+    const el = document.createElement('span');
+    el.className = 'preset-tag';
+    el.textContent = item;
+    el.onclick = () => addIngredientByName(item);
+    tagsContainer.appendChild(el);
+  });
+
+  group.appendChild(tagsContainer);
+  pt.appendChild(group);
+});
+
+// 回车添加
+document.getElementById('ingredientInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addIngredient();
+});
+
+function addIngredient() {
+  const val = document.getElementById('ingredientInput').value.trim();
+  if (!val) return;
+  addIngredientByName(val);
+  document.getElementById('ingredientInput').value = '';
+}
+
+function addIngredientByName(name) {
+  if (ingredients.includes(name)) return;
+  ingredients.push(name);
+  renderTags();
+}
+
+function removeIngredient(name) {
+  ingredients = ingredients.filter(i => i !== name);
+  renderTags();
+}
+
+function renderTags() {
+  const area = document.getElementById('tagsArea');
+  area.innerHTML = '';
+  ingredients.forEach(name => {
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `${name}<button onclick="removeIngredient('${name}')">×</button>`;
+    area.appendChild(tag);
+  });
+}
+
+async function generate() {
+  const apiKey = checkApiKey();
+  if (!apiKey) {
+    showError('请先输入 DeepSeek API Key');
+    return;
+  }
+  if (ingredients.length === 0) return showError('请至少添加一种食材');
+
+  setLoading(true);
+  hideError();
+
+  const prompt = `我冰箱里现在有这些食材：${ingredients.join('、')}。
+
+请根据这些食材，推荐${dishCount}道可以做的菜肴。返回严格的JSON格式，不要任何多余文字：
+
+{
+  "dishes": [
+    {
+      "name": "菜名",
+      "difficulty": "简单/中等/复杂",
+      "time": "预计烹饪时间，如15分钟",
+      "desc": "简短的做法描述，一两句话",
+      "missing": ["还需要的食材，没有则为空数组"],
+      "steps": ["烹饪步骤1", "烹饪步骤2", "烹饪步骤3"],
+      "seasonings": ["调料1", "调料2", "调料3"],
+      "calories": "卡路里估算，如320千卡"
+    }
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `请求失败 (${res.status})`);
+    }
+
+    const data = await res.json();
+    let text = data.choices?.[0]?.message?.content || '';
+    // 去除可能的 markdown 代码块
+    text = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    renderDishes(parsed.dishes || []);
+  } catch(e) {
+    showError('出错了：' + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderDishes(dishes) {
+  const list = document.getElementById('dishList');
+  list.innerHTML = '';
+  dishes.forEach((d, i) => {
+    const card = document.createElement('div');
+    card.className = 'dish-card';
+    card.style.animationDelay = (i * 0.07) + 's';
+
+    const missingHtml = d.missing?.length
+      ? `<div class="missing">还需要：<span>${d.missing.join('、')}</span></div>`
+      : `<div class="missing" style="color:#27ae60">✅ 食材刚好齐全</div>`;
+
+    const stars = {
+      '简单': '⭐',
+      '中等': '⭐⭐',
+      '复杂': '⭐⭐⭐'
+    }[d.difficulty] || '⭐⭐';
+
+    const stepsHtml = d.steps?.length
+      ? `<div class="dish-details"><h4>👨‍🍳 烹饪步骤</h4><ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol></div>`
+      : '';
+
+    const seasoningsHtml = d.seasonings?.length
+      ? `<div class="dish-details"><h4>🧄 所需调料</h4><ul>${d.seasonings.map(s => `<li>${s}</li>`).join('')}</ul></div>`
+      : '';
+
+    card.innerHTML = `
+      <h3>${d.name}</h3>
+      <div class="dish-meta">
+        <span class="badge">⏱ ${d.time}</span>
+        <span class="badge"><span class="difficulty-bar"><span class="difficulty-stars">${stars}</span> ${d.difficulty}</span></span>
+        ${d.calories ? `<span class="calories">🔥 ${d.calories}</span>` : ''}
+      </div>
+      <p>${d.desc}</p>
+      ${stepsHtml}
+      ${seasoningsHtml}
+      ${missingHtml}
+    `;
+    list.appendChild(card);
+  });
+  // 切换到结果界面
+  document.getElementById('inputView').classList.add('hidden');
+  document.getElementById('resultView').classList.add('visible');
+}
+
+function goBack() {
+  document.getElementById('resultView').classList.remove('visible');
+  document.getElementById('inputView').classList.remove('hidden');
+}
+
+function setLoading(v) {
+  document.getElementById('loading').classList.toggle('visible', v);
+  document.getElementById('genBtn').disabled = v;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('errorMsg').classList.remove('visible');
+}
+</script>
+</body>
+</html>
