@@ -245,6 +245,51 @@
     border-color: #e67e22;
   }
 
+  /* 口味设置 */
+  .flavor-section {
+    background: #fff;
+    border: 1px solid #f0d9c0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .flavor-section label {
+    font-size: 0.88rem;
+    color: #888;
+  }
+
+  .flavor-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .flavor-option {
+    background: #fdebd0;
+    border: 2px solid transparent;
+    color: #c0392b;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .flavor-option:hover {
+    background: #f5cba7;
+  }
+
+  .flavor-option.active {
+    background: #e67e22;
+    color: #fff;
+    border-color: #c0392b;
+  }
+
   /* 输入界面 */
   .input-view {
     transition: opacity 0.3s ease;
@@ -519,6 +564,20 @@
       </div>
     </div>
 
+    <!-- 口味设置 -->
+    <div class="flavor-section">
+      <label>🌶️ 想要什么口味？</label>
+      <div class="flavor-options" id="flavorOptions">
+        <span class="flavor-option active" data-flavor="不限">不限</span>
+        <span class="flavor-option" data-flavor="清淡">清淡</span>
+        <span class="flavor-option" data-flavor="家常">家常</span>
+        <span class="flavor-option" data-flavor="香辣">香辣</span>
+        <span class="flavor-option" data-flavor="酸甜">酸甜</span>
+        <span class="flavor-option" data-flavor="咸鲜">咸鲜</span>
+        <span class="flavor-option" data-flavor="麻辣">麻辣</span>
+      </div>
+    </div>
+
     <!-- 食材输入 -->
     <div class="ingredients-box">
       <h2>🥬 我有这些食材</h2>
@@ -571,6 +630,27 @@ countOptions.forEach(opt => {
     countOptions.forEach(o => o.classList.remove('active'));
     opt.classList.add('active');
     dishCount = parseInt(opt.dataset.count);
+  });
+});
+
+// 口味选择
+let selectedFlavor = '不限';
+const flavorOptions = document.querySelectorAll('.flavor-option');
+const savedFlavor = localStorage.getItem('what-can-i-cook-flavor');
+
+if (savedFlavor) {
+  selectedFlavor = savedFlavor;
+  flavorOptions.forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.flavor === savedFlavor);
+  });
+}
+
+flavorOptions.forEach(opt => {
+  opt.addEventListener('click', () => {
+    flavorOptions.forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    selectedFlavor = opt.dataset.flavor;
+    localStorage.setItem('what-can-i-cook-flavor', selectedFlavor);
   });
 });
 
@@ -684,7 +764,8 @@ async function generate() {
 
   const prompt = `我冰箱里现在有这些食材：${ingredients.join('、')}。
 
-请根据这些食材，推荐${dishCount}道可以做的菜肴。返回严格的JSON格式，不要任何多余文字：
+请根据这些食材，推荐${dishCount}道可以做的菜肴。我想要的口味是：${selectedFlavor}。
+请根据口味偏好推荐相应的菜肴。返回严格的JSON格式，不要任何多余文字：
 
 {
   "dishes": [
